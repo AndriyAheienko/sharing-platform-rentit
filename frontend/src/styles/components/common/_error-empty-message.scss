@@ -3,6 +3,7 @@
 .error-banner {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 12px;
     background-color: $color-error-bg;
     border-left: 4px solid $color-error-border;
