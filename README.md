@@ -26,7 +26,7 @@ Node.js, featuring real-time chat and a fully responsive, mobile-first design.
 ## 🌍 Live Demo
 
 **Check out the live application here:**
-[Open Live App](https://andreii-sharing-platform.vercel.app)
+[Open Live App](https://aheienko-sharing-platform.vercel.app)
 
 ## 💻 Tech Stack
 
