@@ -74,7 +74,7 @@ Node.js, featuring real-time chat and a fully responsive, mobile-first design.
 1. **Clone the repository:**
 
 ```bash
-git clone https://github.com/Ageyan/andreii-sharing-platform
+git clone https://github.com/AndriyAheienko/sharing-platform-rentit
 ```
 
 2. **Install frontend dependencies:**
@@ -112,4 +112,4 @@ npm run dev
 
 ### 👨‍💻 Author
 
-Andrey - Full Stack Developer - [GitHub Profile](https://github.com/Ageyan)
+Andriy - Full Stack Developer - [GitHub Profile](https://github.com/AndriyAheienko)
