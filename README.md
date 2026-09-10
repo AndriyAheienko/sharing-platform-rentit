@@ -112,4 +112,4 @@ npm run dev
 
 ### 👨‍💻 Author
 
-Andrey - Junior Frontend Developer - [GitHub Profile](https://github.com/Ageyan)
+Andrey - Full Stack Developer - [GitHub Profile](https://github.com/Ageyan)
