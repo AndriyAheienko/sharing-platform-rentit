@@ -1,9 +1,8 @@
 import { Request, Response } from 'express';
 
 import { query } from '../config/db';
-import { handleError } from '../utils/errorHandler';
 
-export const createItem = async(req: Request, res: Response): Promise<void> => {
+export const createItem = async (req: Request, res: Response): Promise<void> => {
     const { title, description, price_per_day, category } = req.body;
     const owner_id = req.user?.userId;
     const files = req.files as Express.Multer.File[];
@@ -14,7 +13,7 @@ export const createItem = async(req: Request, res: Response): Promise<void> => {
             INSERT INTO items (title, description, price_per_day, category, image_url, owner_id)
             VALUES ($1, $2, $3, $4, $5, $6)
             RETURNING *
-        `
+        `;
 
         const result = await query(sqlQuery, [
             title,
@@ -22,23 +21,23 @@ export const createItem = async(req: Request, res: Response): Promise<void> => {
             price_per_day,
             category,
             image_url,
-            owner_id
+            owner_id,
         ]);
 
         res.status(201).json({
             message: 'Річ успішно додано для оренди!',
-            item: result.rows[0]
+            item: result.rows[0],
         });
-    } catch(error) {
-        handleError(error, res, 'додаванні речі')
+    } catch (error) {
+        throw error;
     }
 };
 
-export const updateItem = async(req: Request, res: Response): Promise<void> => {
+export const updateItem = async (req: Request, res: Response): Promise<void> => {
     const { title, description, price_per_day, category } = req.body;
     const files = req.files as Express.Multer.File[];
     const image_url = files ? files.map(file => file.path) : [];
-    const id  = Number(req.params.id);
+    const id = Number(req.params.id);
     const owner_id = req.user?.userId;
 
     try {
@@ -46,15 +45,23 @@ export const updateItem = async(req: Request, res: Response): Promise<void> => {
             UPDATE items SET title = $1, description = $2, price_per_day = $3, category = $4, image_url = $5
             WHERE id = $6 AND owner_id = $7
             RETURNING id, title, description, price_per_day, category, image_url
-        `
+        `;
 
-        const result = await query(sqlQuery, [title, description, price_per_day, category, image_url, id, owner_id])
+        const result = await query(sqlQuery, [
+            title,
+            description,
+            price_per_day,
+            category,
+            image_url,
+            id,
+            owner_id,
+        ]);
 
         res.status(200).json(result.rows[0]);
     } catch (error) {
-        handleError(error, res, 'редагуванні речі')
+        throw error;
     }
-}
+};
 
 export const getItems = async (req: Request, res: Response): Promise<void> => {
     const page = Number(req.query.page) || 1;
@@ -67,7 +74,7 @@ export const getItems = async (req: Request, res: Response): Promise<void> => {
 
     try {
         let baseQuery = 'FROM items WHERE 1=1';
-        const values : any[] = [];
+        const values: any[] = [];
         let paramIndex = 1;
 
         if (category && category != 'Усі речі') {
@@ -92,15 +99,15 @@ export const getItems = async (req: Request, res: Response): Promise<void> => {
                 orderQuery = ' ORDER BY created_at DESC';
                 break;
             case 'oldest':
-                orderQuery = ' ORDER BY created_at ASC'; 
+                orderQuery = ' ORDER BY created_at ASC';
                 break;
             case 'price-desc':
-                orderQuery = ' ORDER BY price_per_day DESC'; 
+                orderQuery = ' ORDER BY price_per_day DESC';
                 break;
-            case 'price-asc': 
-                orderQuery = ' ORDER BY price_per_day ASC'; 
+            case 'price-asc':
+                orderQuery = ' ORDER BY price_per_day ASC';
                 break;
-            default: 
+            default:
                 orderQuery = ' ORDER BY created_at DESC';
                 break;
         }
@@ -126,17 +133,17 @@ export const getItems = async (req: Request, res: Response): Promise<void> => {
         const hasMore = totalCount > limit * page;
         res.status(200).json({
             data: result.rows,
-            hasMore: hasMore 
+            hasMore: hasMore,
         });
-    } catch(error) {
-        handleError(error, res, 'при отриманні речей');
+    } catch (error) {
+        throw error;
     }
-}
+};
 
-export const getItemById = async(req: Request, res: Response): Promise<void> => {
+export const getItemById = async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
 
-    try{
+    try {
         const sqlQuery = `
             SELECT i.*, u.name AS owner_name, u.created_at AS owner_created_at, u.avatar_url AS owner_avatar
             FROM items i
@@ -146,47 +153,49 @@ export const getItemById = async(req: Request, res: Response): Promise<void> => 
 
         const result = await query(sqlQuery, [id]);
 
-        if(result.rows.length === 0) {
-            res.status(404).json({message: 'Річ не знайдено'});
+        if (result.rows.length === 0) {
+            res.status(404).json({ message: 'Річ не знайдено' });
             return;
         }
 
         res.status(200).json(result.rows[0]);
-    } catch(error) {
-        handleError(error, res, 'отриманні речі за id')
+    } catch (error) {
+        throw error;
     }
 };
 
-export const deleteItemById = async(req: Request, res: Response): Promise<void> => {
+export const deleteItemById = async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
     const owner_id = req?.user?.userId;
 
     try {
-        const sqlQuery = 'DELETE FROM items WHERE id = $1 AND owner_id = $2 RETURNING *'
+        const sqlQuery = 'DELETE FROM items WHERE id = $1 AND owner_id = $2 RETURNING *';
 
-        const result = await query(sqlQuery, [id, owner_id])
+        const result = await query(sqlQuery, [id, owner_id]);
 
-        if(result.rows.length === 0) {
-            res.status(404).json({message: 'Річ не знайдено або у вас немає прав для її видалення'});
+        if (result.rows.length === 0) {
+            res.status(404).json({
+                message: 'Річ не знайдено або у вас немає прав для її видалення',
+            });
             return;
         }
 
-        res.status(200).json({ message: 'Річ успішно видалено'});
+        res.status(200).json({ message: 'Річ успішно видалено' });
     } catch (error) {
-        handleError(error, res, 'видаленні речі')
+        throw error;
     }
 };
 
-export const getMyItems = async(req: Request, res: Response): Promise<void> => {
-    const owner_id = req?.user?.userId
+export const getMyItems = async (req: Request, res: Response): Promise<void> => {
+    const owner_id = req?.user?.userId;
 
     try {
-        const sqlQuery = 'SELECT * FROM items WHERE owner_id = $1'
+        const sqlQuery = 'SELECT * FROM items WHERE owner_id = $1';
 
-        const result = await query(sqlQuery, [owner_id])
+        const result = await query(sqlQuery, [owner_id]);
 
         res.status(200).json(result.rows);
     } catch (error) {
-        handleError(error, res, 'отриманні власних речей')
+        throw error;
     }
 };

@@ -5,26 +5,26 @@ import multer from 'multer';
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET
+    api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
 const storage = new CloudinaryStorage({
     cloudinary: cloudinary,
-    params: async (req, file) => {
+    params: async (_req, file) => {
         if (file.fieldname === 'avatar') {
             return {
-                folder: 'sharing_platform_avatars', 
+                folder: 'sharing_platform_avatars',
                 allowed_formats: ['jpg', 'png', 'jpeg', 'webp'],
-                transformation: [{ width: 200, height: 200, crop: 'fill', gravity: 'face' }], 
+                transformation: [{ width: 200, height: 200, crop: 'fill', gravity: 'face' }],
             };
         }
-        
+
         return {
-            folder: 'sharing_platform_items', 
+            folder: 'sharing_platform_items',
             allowed_formats: ['jpg', 'png', 'jpeg', 'webp'],
-            transformation: [{ width: 800, height: 600, crop: 'limit' }], 
+            transformation: [{ width: 800, height: 600, crop: 'limit' }],
         };
     },
 });
 
-export const upload = multer({storage: storage});
+export const upload = multer({ storage: storage });

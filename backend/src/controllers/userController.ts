@@ -1,28 +1,28 @@
 import { Request, Response } from 'express';
 
 import { query } from '../config/db';
-import { handleError } from '../utils/errorHandler';
 
-export const getUserInfo = async(req: Request, res: Response ): Promise<void> => {
+export const getUserInfo = async (req: Request, res: Response): Promise<void> => {
     const userId = req.user?.userId;
 
     try {
-        const sqlQuery = 'SELECT id, name, email, phone, created_at, avatar_url FROM users WHERE id = $1';
+        const sqlQuery =
+            'SELECT id, name, email, phone, created_at, avatar_url FROM users WHERE id = $1';
 
-        const result = await query(sqlQuery, [userId])
+        const result = await query(sqlQuery, [userId]);
 
-        if(result.rows.length === 0) {
-            res.status(404).json({message: 'Користувача не знайдено'});
+        if (result.rows.length === 0) {
+            res.status(404).json({ message: 'Користувача не знайдено' });
             return;
         }
 
         res.status(200).json(result.rows[0]);
-    } catch(error) {
-        handleError(error, res, 'отриманні даних про користувача')
+    } catch (error) {
+        throw error;
     }
 };
 
-export const putUserUpdate = async(req: Request, res: Response): Promise<void> => {
+export const putUserUpdate = async (req: Request, res: Response): Promise<void> => {
     const userId = req.user?.userId;
     const { name, phone } = req.body;
 
@@ -30,19 +30,13 @@ export const putUserUpdate = async(req: Request, res: Response): Promise<void> =
         const sqlQuerry = `
             UPDATE users SET name = $1, phone = $2 WHERE id = $3
             RETURNING id, name, email, phone, created_at, avatar_url
-        `
+        `;
 
-        const result = await query(sqlQuerry, 
-            [
-                name, 
-                phone,
-                userId
-            ]
-        )
+        const result = await query(sqlQuerry, [name, phone, userId]);
 
         res.status(200).json(result.rows[0]);
-    } catch(error) {
-        handleError(error, res, 'зміні даних про користувача')
+    } catch (error) {
+        throw error;
     }
 };
 
@@ -59,12 +53,12 @@ export const updateAvatar = async (req: Request, res: Response): Promise<void> =
         const sqlQuery = `
             UPDATE users SET avatar_url = $1 WHERE id = $2
             RETURNING avatar_url
-        `
+        `;
 
-        const result = await query(sqlQuery, [file, userId])
+        const result = await query(sqlQuery, [file, userId]);
 
         res.status(200).json(result.rows[0]);
     } catch (error) {
-        handleError(error, res, 'зміні аватара коричтувача')
+        throw error;
     }
-}
+};

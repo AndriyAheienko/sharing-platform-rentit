@@ -1,9 +1,8 @@
-import { Request, Response } from "express";
+import { Request, Response } from 'express';
 
-import { query } from "../config/db";
+import { query } from '../config/db';
 import { io } from '../index';
-import { handleError } from "../utils/errorHandler";
-import { SaveMessage } from "../types/chat.types";
+import { SaveMessage } from '../types/chat.types';
 
 export const getOrCreateChat = async (req: Request, res: Response): Promise<void> => {
     const { item_id, owner_id } = req.body;
@@ -13,7 +12,7 @@ export const getOrCreateChat = async (req: Request, res: Response): Promise<void
         const checkQuery = `
             SELECT * FROM chats
             WHERE item_id = $1 AND renter_id = $2
-        `
+        `;
 
         const checkChat = await query(checkQuery, [item_id, renter_id]);
 
@@ -26,15 +25,15 @@ export const getOrCreateChat = async (req: Request, res: Response): Promise<void
             INSERT INTO chats (item_id, renter_id, owner_id)
             VALUES ($1, $2, $3)
             RETURNING *
-        `
+        `;
 
-        const result = await query(sqlQuery, [item_id, renter_id, owner_id])
+        const result = await query(sqlQuery, [item_id, renter_id, owner_id]);
 
-        res.status(201).json(result.rows[0])        
+        res.status(201).json(result.rows[0]);
     } catch (error) {
-        handleError(error, res, 'створенні чату')
+        throw error;
     }
-}
+};
 
 export const getUserChats = async (req: Request, res: Response): Promise<void> => {
     const userId = req.user?.userId;
@@ -71,40 +70,40 @@ export const getUserChats = async (req: Request, res: Response): Promise<void> =
 
         res.status(200).json(result.rows);
     } catch (error) {
-        handleError(error, res, 'отриманні чатів')
+        throw error;
     }
-}
+};
 
 export const getChatMessages = async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
     const userId = req.user?.userId;
 
     try {
-        const checkQuery = `SELECT * FROM chats WHERE id = $1`
+        const checkQuery = `SELECT * FROM chats WHERE id = $1`;
 
-        const checkChat = await query(checkQuery, [id])
+        const checkChat = await query(checkQuery, [id]);
 
         if (checkChat.rows.length === 0) {
-            res.status(400).json({ message: 'Чат не знайдено, повідомлення не знайдені' })
+            res.status(400).json({ message: 'Чат не знайдено, повідомлення не знайдені' });
             return;
         }
 
         const chat = checkChat.rows[0];
 
-        if (userId !== chat.renter_id && userId !== chat.owner_id) { 
-            res.status(403).json({ message: 'У вас немає доступу до цього чату' })
+        if (userId !== chat.renter_id && userId !== chat.owner_id) {
+            res.status(403).json({ message: 'У вас немає доступу до цього чату' });
             return;
         }
 
-        const sqlQuery = `SELECT * FROM messages WHERE chat_id = $1 ORDER BY created_at ASC`
+        const sqlQuery = `SELECT * FROM messages WHERE chat_id = $1 ORDER BY created_at ASC`;
 
-        const result = await query(sqlQuery, [id])
+        const result = await query(sqlQuery, [id]);
 
-        res.status(200).json(result.rows)
+        res.status(200).json(result.rows);
     } catch (error) {
-        handleError(error, res, 'отриманні повідомлень')
+        throw error;
     }
-}
+};
 
 export const getUnreadMessages = async (req: Request, res: Response): Promise<void> => {
     const userId = req.user?.userId;
@@ -117,14 +116,14 @@ export const getUnreadMessages = async (req: Request, res: Response): Promise<vo
             WHERE m.is_read = FALSE
             AND m.sender_id != $1
             AND (c.renter_id = $1 OR c.owner_id = $1);
-        `
-        const result = await query(sqlQuery, [userId])
+        `;
+        const result = await query(sqlQuery, [userId]);
 
-        res.status(200).json(Number(result.rows[0].unread_count))
+        res.status(200).json(Number(result.rows[0].unread_count));
     } catch (error) {
-        handleError(error, res, 'отриманні непрочитаних повідомлень')
+        throw error;
     }
-}
+};
 
 export const updateStatusMessages = async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
@@ -134,16 +133,16 @@ export const updateStatusMessages = async (req: Request, res: Response): Promise
             UPDATE messages
             SET is_read = true
             WHERE chat_id = $1 AND sender_id != $2 AND is_read = FALSE
-        `
+        `;
 
-        await query(sqlQuery, [id, userId])
+        await query(sqlQuery, [id, userId]);
 
         res.status(200).json({ message: 'Статус повідомлень оновлено' });
         io.to(id.toString()).emit('messages_read');
     } catch (error) {
-        handleError(error, res, 'зміні статусу непрочитаних повідомлень')
+        throw error;
     }
-}
+};
 
 export const saveMessages = async (data: SaveMessage): Promise<void> => {
     const { chat_id, sender_id, text } = data;
@@ -153,13 +152,13 @@ export const saveMessages = async (data: SaveMessage): Promise<void> => {
             INSERT INTO messages (chat_id, sender_id, text)
             VALUES ($1, $2, $3)
             RETURNING *
-        `
+        `;
 
-        const result = await query(sqlQuery, [chat_id, sender_id, text])
+        const result = await query(sqlQuery, [chat_id, sender_id, text]);
 
         io.to(data.chat_id.toString()).emit('receive_message', result.rows[0]);
     } catch (error) {
         console.error('Помилка при збереженні повідомлення', error);
         io.to(data.chat_id.toString()).emit('error', error);
     }
-}
+};
