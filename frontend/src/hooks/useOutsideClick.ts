@@ -1,13 +1,19 @@
-import { useEffect } from "react";
-import type { RefObject } from "react";
+import { useEffect } from 'react';
+import type { RefObject } from 'react';
 
 export const useOutsideClick = <T extends HTMLElement>(
-    ref: RefObject<T | null>, 
-    callback: () => void
+    ref: RefObject<T | null>,
+    callback: () => void,
 ) => {
     useEffect(() => {
         const handleClick = (event: MouseEvent | TouchEvent) => {
-            if (ref.current && !ref.current.contains(event.target as Node)) {
+            if (!event.target) return;
+
+            if (
+                ref.current &&
+                event.target instanceof Node &&
+                !ref.current.contains(event.target)
+            ) {
                 callback();
             }
         };
@@ -18,6 +24,6 @@ export const useOutsideClick = <T extends HTMLElement>(
         return () => {
             document.removeEventListener('mousedown', handleClick);
             document.removeEventListener('touchstart', handleClick);
-        }
-    }, [ref, callback])
+        };
+    }, [ref, callback]);
 };

@@ -1,18 +1,17 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
 import { query } from '../config/db';
-import { handleError } from '../utils/errorHandler';
 
-export const register = async(req: Request, res: Response): Promise<void> => {
+export const register = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const { name, phone, email, password } = req.body;
-        
+
     try {
         const userExist = await query('SELECT * FROM users WHERE email = $1', [email]);
 
-        if(userExist.rows.length > 0) {
-            res.status(400).json({ message: 'Користувач з таким email вже зареєстрований'});
+        if (userExist.rows.length > 0) {
+            res.status(400).json({ message: 'Користувач з таким email вже зареєстрований' });
             return;
         }
 
@@ -25,18 +24,18 @@ export const register = async(req: Request, res: Response): Promise<void> => {
             RETURNING id, name, email, phone;
         `;
 
-        const newUser = await query(newUserQuery, [name, phone, email, passwordHash ]);
+        const newUser = await query(newUserQuery, [name, phone, email, passwordHash]);
 
         res.status(201).json({
             message: 'Користувач успішно зареєстрований',
-            user: newUser.rows[0]
+            user: newUser.rows[0],
         });
-    } catch(error) {
-        handleError(error, res, 'реєстрації')
+    } catch (error) {
+        next(error);
     }
 };
 
-export const login = async(req: Request, res: Response): Promise<void> => {
+export const login = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const { email, password } = req.body;
 
     try {
@@ -46,27 +45,25 @@ export const login = async(req: Request, res: Response): Promise<void> => {
         const user = result.rows[0];
 
         if (!user) {
-            res.status(400).json({message: 'Не правильний email або password'});
+            res.status(400).json({ message: 'Не правильний email або password' });
             return;
         }
 
         const isMatch = await bcrypt.compare(password, user.password_hash);
         if (!isMatch) {
-            res.status(400).json({message: 'Не правильний email або password'});
+            res.status(400).json({ message: 'Не правильний email або password' });
             return;
         }
 
-        const token = jwt.sign(
-            { userId: user.id }, 
-            process.env.JWT_SECRET as string, 
-            { expiresIn: '1d' }
-        );
+        const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET as string, {
+            expiresIn: '1d',
+        });
 
         res.status(200).json({
             token,
-            user: {id: user.id, name: user.name, email: user.email}
+            user: { id: user.id, name: user.name, email: user.email },
         });
-    } catch(error) {
-        handleError(error, res, 'вході')
+    } catch (error) {
+        next(error);
     }
 };

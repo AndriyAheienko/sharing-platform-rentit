@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useCallback } from 'react';
 
 import type { ItemCategory } from '../../types/items.types';
 import type { SortValue, Sorts } from '../../types/items.types';
@@ -23,7 +23,10 @@ interface SortProps {
 const SortContainer = ({ setSearchTerm, setSelectCategory, sortBy, setSortBy }: SortProps) => {
     const [isOpen, setIsOpen] = useState<boolean>(false);
     const containRef = useRef<HTMLDivElement | null>(null);
-    useOutsideClick(containRef, () => setIsOpen(false));
+    const sortClose = useCallback(() => {
+        setIsOpen(false);
+    }, []);
+    useOutsideClick(containRef, sortClose);
 
     return (
         <div className="sort">
