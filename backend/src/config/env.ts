@@ -1,7 +1,7 @@
 import 'dotenv/config';
-import { envShcema } from '../shcema/env.schema';
+import { envSchema } from '../schema/env.schema';
 
-const parsedEnv = envShcema.parse(process.env);
+const parsedEnv = envSchema.parse(process.env);
 
 export const env = {
     DATABASE_URL: parsedEnv.DATABASE_URL,
