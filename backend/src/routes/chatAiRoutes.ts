@@ -1,8 +1,10 @@
 import { GoogleGenAI } from '@google/genai';
 import { Request, Response, Router } from 'express';
 
+import { env } from '../config/env';
+
 const ai = new GoogleGenAI({
-    apiKey: process.env.GEMINI_API_KEY
+    apiKey: env.GEMINI_API_KEY,
 });
 
 const SYSTEM_INSTRUCTION = `
@@ -25,21 +27,21 @@ const router = Router();
 router.post('/chat-bot', async (req: Request, res: Response) => {
     try {
         const { prompt } = req.body;
-        
+
         if (!prompt) {
             return res.status(400).json({ error: 'Порожній запит' });
         }
 
         const response = await ai.models.generateContent({
-            model: 'gemini-3.5-flash-lite', 
+            model: 'gemini-3.5-flash-lite',
             contents: prompt,
             config: {
-                systemInstruction: SYSTEM_INSTRUCTION
-            }
+                systemInstruction: SYSTEM_INSTRUCTION,
+            },
         });
-        
+
         const botReply = response.text;
-        
+
         return res.status(200).json({ reply: botReply });
     } catch (error) {
         console.error('Помилка ІІ:', error);

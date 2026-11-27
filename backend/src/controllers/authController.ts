@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
 import { query } from '../config/db';
+import { env } from '../config/env';
 
 export const register = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const { name, phone, email, password } = req.body;
@@ -55,7 +56,7 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
             return;
         }
 
-        const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET as string, {
+        const token = jwt.sign({ userId: user.id }, env.JWT_SECRET, {
             expiresIn: '1d',
         });
 

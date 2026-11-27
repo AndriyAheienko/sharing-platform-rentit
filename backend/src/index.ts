@@ -1,11 +1,11 @@
 import express, { type Response, type Request } from 'express';
-import 'dotenv/config';
 import cors from 'cors';
 import http from 'http';
 import { Server } from 'socket.io';
 
 import { errorHandler } from './middleware/errorHandler';
 import { initDatabase } from './models/initDB';
+import { env } from './config/env';
 
 import authRoutes from './routes/authRoutes';
 import itemRoutes from './routes/itemRoutes';
@@ -16,13 +16,13 @@ import chatRoutes from './routes/chatRoutes';
 import { chatHandler } from './sockets/chatHandler';
 
 const app = express();
-const port = process.env.PORT || 8000;
+const port = env.PORT;
 
 app.use(express.json());
 
 app.use(
     cors({
-        origin: ['http://localhost:5173', 'https://aheienko-sharing-platform.vercel.app'],
+        origin: [env.CORS_ORIGIN, 'https://aheienko-sharing-platform.vercel.app'],
         credentials: true,
         methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
         allowedHeaders: ['Content-Type', 'Authorization'],
@@ -50,7 +50,7 @@ const httpServer = http.createServer(app);
 
 export const io = new Server(httpServer, {
     cors: {
-        origin: ['http://localhost:5173', 'https://aheienko-sharing-platform.vercel.app'],
+        origin: [env.CORS_ORIGIN, 'https://aheienko-sharing-platform.vercel.app'],
         methods: ['GET', 'POST'],
         credentials: true,
     },

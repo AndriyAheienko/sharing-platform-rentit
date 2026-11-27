@@ -1,0 +1,15 @@
+import 'dotenv/config';
+import { envShcema } from '../shcema/env.schema';
+
+const parsedEnv = envShcema.parse(process.env);
+
+export const env = {
+    DATABASE_URL: parsedEnv.DATABASE_URL,
+    PORT: parsedEnv.PORT,
+    JWT_SECRET: parsedEnv.JWT_SECRET,
+    CORS_ORIGIN: parsedEnv.CORS_ORIGIN,
+    CLOUDINARY_CLOUD_NAME: parsedEnv.CLOUDINARY_CLOUD_NAME,
+    CLOUDINARY_API_KEY: parsedEnv.CLOUDINARY_API_KEY,
+    CLOUDINARY_API_SECRET: parsedEnv.CLOUDINARY_API_SECRET,
+    GEMINI_API_KEY: parsedEnv.GEMINI_API_KEY,
+};
