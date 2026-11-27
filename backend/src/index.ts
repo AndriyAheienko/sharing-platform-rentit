@@ -58,7 +58,7 @@ export const io = new Server(httpServer, {
 
 chatHandler(io);
 
-app.get('/', (res: Response) => {
+app.get('/', (_req: Request, res: Response) => {
     res.send('Сервер RentIt успішно запущено на TypeScript!');
 });
 
